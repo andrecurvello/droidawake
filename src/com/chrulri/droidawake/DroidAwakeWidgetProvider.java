@@ -1,5 +1,5 @@
 /******************************************************************************
- *  Droid awake, stay awake widget app for Android devices                    *
+ *  DroidAwake, stay awake widget app for Android devices                    *
  *  Copyright (C) 2012  Christian Ulrich <chrulri@gmail.com>                  *
  *                                                                            *
  *  This program is free software: you can redistribute it and/or modify      *
