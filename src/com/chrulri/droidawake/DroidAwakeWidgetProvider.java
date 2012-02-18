@@ -45,8 +45,6 @@ public class DroidAwakeWidgetProvider extends AppWidgetProvider {
 	@Override
 	public void onEnabled(Context context) {
 //		Log.d(TAG, "onEnabled");
-		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-		wakeLock = pm.newWakeLock(FLAGS, context.getPackageName());
 		startUpdateService(context);
 		super.onEnabled(context);
 	}
@@ -67,16 +65,17 @@ public class DroidAwakeWidgetProvider extends AppWidgetProvider {
 //		Log.d(TAG, "onReceive: " + intent);
 		if (ACTION_TOGGLE.equals(intent.getAction())) {
 //			Log.d(TAG, "onReceive ACTION_TOGGLE");
-			if(wakeLock == null) {
-				Log.w(TAG, "onReceive with wakeLock == null");
+			if(wakeLock == null || !wakeLock.isHeld()) {
+				PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+				wakeLock = pm.newWakeLock(FLAGS, context.getPackageName());
+				wakeLock.acquire();
+				showToast(context, R.string.wakelock_on);
 			} else {
 				if (wakeLock.isHeld()) {
 					wakeLock.release();
 					showToast(context, R.string.wakelock_off);
-				} else {
-					wakeLock.acquire();
-					showToast(context, R.string.wakelock_on);
 				}
+				wakeLock = null;
 			}
 			startUpdateService(context);
 		}
