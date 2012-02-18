@@ -109,6 +109,8 @@ public class DroidAwakeWidgetProvider extends AppWidgetProvider {
 			ComponentName thisWidget = new ComponentName(this, DroidAwakeWidgetProvider.class);
 			AppWidgetManager manager = AppWidgetManager.getInstance(this);
 			manager.updateAppWidget(thisWidget, views);
+			// stop service, it's not needed anymore
+			stopSelf();
 		}
 
 		private RemoteViews getUpdatedViews(Context context) {

@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--***************************************************************************
- *  DroidAwake, stay awake widget app for Android devices                    *
+/******************************************************************************
+ *  DroidAwake, stay awake widget app for Android devices                     *
  *  Copyright (C) 2012  Christian Ulrich <chrulri@gmail.com>                  *
  *                                                                            *
  *  This program is free software: you can redistribute it and/or modify      *
@@ -15,10 +14,20 @@
  *                                                                            *
  *  You should have received a copy of the GNU General Public License         *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.     *
- ***************************************************************************-->
-<resources>
-    <string name="app_name">DroidAwake</string>
-    <string name="wakelock_on">WakeLock: ON</string>
-    <string name="wakelock_off">WakeLock: OFF</string>
-    <string name="stub">Add the DroidAwake widget to your home screen and turn it on to let your droid stay awake..</string>
-</resources>
+ ******************************************************************************/
+package com.chrulri.droidawake;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.Toast;
+
+public class StubActivity extends Activity {
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		sendBroadcast(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME));
+		Toast.makeText(this, R.string.stub, Toast.LENGTH_LONG).show();
+		finish();
+		super.onCreate(savedInstanceState);
+	}
+}

@@ -20,4 +20,5 @@
     <string name="app_name">DroidAwake</string>
     <string name="wakelock_on">WakeLock: AN</string>
     <string name="wakelock_off">WakeLock: AUS</string>
+    <string name="stub">Füge das DroidAwake-Widget zu deinem HomeScreen hinzu und schalte es ein um deinen Droid eingeschaltet zu lassen..</string>
 </resources>
