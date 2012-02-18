@@ -1,9 +1,9 @@
-Droid awake
+DroidAwake
 ===========
 
 This widget app keeps your Android device awake when you want it to. Perfect for developers so you don't have to unlock the device from time to time.
 
-As soon as it hits a stable version, it will be available on the Android Market for free: [Droid awake][1]
+It's available on the Android Market for free: [Droid Awake][1]
 
 
 Feel free to fork, create issues, [buy me a beer][2] or just having fun burning your battery ;-)
@@ -13,7 +13,7 @@ If you fork it, feel free to send me pull requests for your awesome new features
 LICENSE
 =======
  ******************************************************************************
-	Droid awake, stay awake widget app for Android devices
+	DroidAwake, stay awake widget app for Android devices
 	Copyright (C) 2012  Christian Ulrich <chrulri@gmail.com>
 
 	This program is free software: you can redistribute it and/or modify
