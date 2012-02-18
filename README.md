@@ -31,4 +31,4 @@ LICENSE
  ******************************************************************************
 
 [1]: https://market.android.com/details?id=com.chrulri.droidawake
-[2]: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=chrulri@gmail.com&item_name=droidtv
+[2]: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=chrulri@gmail.com&item_name=droidawake
