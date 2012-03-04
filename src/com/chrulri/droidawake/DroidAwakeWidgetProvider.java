@@ -17,119 +17,163 @@
  ******************************************************************************/
 package com.chrulri.droidawake;
 
+import static android.content.Intent.ACTION_SCREEN_OFF;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
 public class DroidAwakeWidgetProvider extends AppWidgetProvider {
-	static final String TAG = DroidAwakeWidgetProvider.class.getName();
+  static final String TAG = DroidAwakeWidgetProvider.class.getName();
 
-	static final String ACTION_TOGGLE = "com.chrulri.droidawake.ACTION_TOGGLE";
-	static final int FLAGS = PowerManager.SCREEN_DIM_WAKE_LOCK
-							| PowerManager.ACQUIRE_CAUSES_WAKEUP
-							| PowerManager.ON_AFTER_RELEASE;
-	static final int BUTTON_ON = R.drawable.bulb_on;
-	static final int BUTTON_OFF = R.drawable.bulb_off;
+  static final String ACTION_TOGGLE = "com.chrulri.droidawake.ACTION_TOGGLE";
+  static final int FLAGS = PowerManager.SCREEN_DIM_WAKE_LOCK;
+  static final int BUTTON_ON = R.drawable.bulb_on;
+  static final int BUTTON_OFF = R.drawable.bulb_off;
 
-	private static PowerManager.WakeLock wakeLock;
+  private static PowerManager.WakeLock wakeLock;
 
-	@Override
-	public void onEnabled(Context context) {
-//		Log.d(TAG, "onEnabled");
-		startUpdateService(context);
-		super.onEnabled(context);
-	}
+  private static boolean isLocked() {
+    return wakeLock != null && wakeLock.isHeld();
+  }
 
-	@Override
-	public void onDisabled(Context context) {
-//		Log.d(TAG, "onDisabled");
-		if (wakeLock != null && wakeLock.isHeld()) {
-			Log.d(TAG, "onDisabled: release WakeLock");
-			wakeLock.release();
-		}
-		wakeLock = null;
-		super.onDisabled(context);
-	}
+  private static void lock(Context context, boolean showToast) {
+    PowerManager pm = (PowerManager) context
+        .getSystemService(Context.POWER_SERVICE);
+    wakeLock = pm.newWakeLock(FLAGS, context.getPackageName());
+    wakeLock.acquire();
+    if (showToast) {
+      showToast(context, R.string.wakelock_on);
+    }
+  }
 
-	@Override
-	public void onReceive(Context context, Intent intent) {
-//		Log.d(TAG, "onReceive: " + intent);
-		if (ACTION_TOGGLE.equals(intent.getAction())) {
-//			Log.d(TAG, "onReceive ACTION_TOGGLE");
-			if(wakeLock == null || !wakeLock.isHeld()) {
-				PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-				wakeLock = pm.newWakeLock(FLAGS, context.getPackageName());
-				wakeLock.acquire();
-				showToast(context, R.string.wakelock_on);
-			} else {
-				if (wakeLock.isHeld()) {
-					wakeLock.release();
-					showToast(context, R.string.wakelock_off);
-				}
-				wakeLock = null;
-			}
-			startUpdateService(context);
-		}
-		super.onReceive(context, intent);
-	}
+  private static void unlock(Context context, boolean showToast) {
+    if (wakeLock != null && wakeLock.isHeld()) {
+      wakeLock.release();
+      if (showToast) {
+        showToast(context, R.string.wakelock_off);
+      }
+    }
+    wakeLock = null;
+  }
 
-	@Override
-	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
-			int[] appWidgetIds) {
-//		Log.d(TAG, "onUpdate");
-		startUpdateService(context);
-		super.onUpdate(context, appWidgetManager, appWidgetIds);
-	}
+  private static void showToast(Context context, int resId) {
+    Toast.makeText(context, resId, Toast.LENGTH_SHORT).show();
+  }
 
-	private void showToast(Context context, int resId) {
-		Toast.makeText(context, resId, Toast.LENGTH_SHORT).show();
-	}
+  private static void startUpdateService(Context context) {
+    Log.debug(TAG, "startUpdateService");
+    context.startService(new Intent(context, UpdateService.class));
+  }
 
-	private void startUpdateService(Context context) {
-//		Log.d(TAG, "startUpdateService");
-		context.startService(new Intent(context, UpdateService.class));
-	}
+  @Override
+  public void onEnabled(Context context) {
+    Log.debug(TAG, "onEnabled");
+    startUpdateService(context);
+  }
 
-	public static class UpdateService extends Service {
+  @Override
+  public void onDisabled(Context context) {
+    Log.debug(TAG, "onDisabled");
+    unlock(context, false);
+  }
 
-		@Override
-		public void onStart(Intent intent, int startId) {
-//			Log.d(TAG, "UpdateService.onStart");
-			RemoteViews views = getUpdatedViews(this);
-			// push update
-			ComponentName thisWidget = new ComponentName(this, DroidAwakeWidgetProvider.class);
-			AppWidgetManager manager = AppWidgetManager.getInstance(this);
-			manager.updateAppWidget(thisWidget, views);
-			// stop service, it's not needed anymore
-			stopSelf();
-		}
+  @Override
+  public void onReceive(Context context, Intent intent) {
+    Log.debug(TAG, "onReceive: " + intent);
+    if (ACTION_TOGGLE.equals(intent.getAction())) {
+      Log.debug(TAG, "onReceive ACTION_TOGGLE");
+      if (isLocked()) {
+        unlock(context, true);
+      } else {
+        lock(context, true);
+      }
+      startUpdateService(context);
+    }
+    super.onReceive(context, intent);
+  }
 
-		private RemoteViews getUpdatedViews(Context context) {
-            boolean hasLock = wakeLock != null && wakeLock.isHeld();
-//          Log.d(TAG, "UpdateService.getUpdatedViews: wakeLock = " + wakeLock + " / hasLock = " + hasLock);
-            // create an intent to broadcast the toggle action
-			Intent intent = new Intent(context, DroidAwakeWidgetProvider.class);
-			intent.setAction(ACTION_TOGGLE);
-			PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-			// get the layout, set drawable and attach the on-click listener
-			RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
-			views.setImageViewResource(R.id.button, hasLock ? BUTTON_ON : BUTTON_OFF);
-			views.setOnClickPendingIntent(R.id.button, pendingIntent);
-            return views;
+  @Override
+  public void onUpdate(Context context, AppWidgetManager appWidgetManager,
+      int[] appWidgetIds) {
+    Log.debug(TAG, "onUpdate");
+    startUpdateService(context);
+  }
+
+  public static class UpdateService extends Service {
+
+    @Override
+    public void onDestroy() {
+      Log.debug(TAG, "UpdateService.onDestroy");
+    }
+
+    @Override
+    public void onStart(Intent intent, int startId) {
+      Log.debug(TAG, "UpdateService.onStart");
+      
+      updateWidgets();
+
+      if (isLocked()) {
+        registerReceiver(new ScreenOnOffRecevier(), new IntentFilter(
+            ACTION_SCREEN_OFF));
+      } else {
+        // stop service, it's not needed anymore
+        stopSelf();
+      }
+    }
+
+    private void updateWidgets() {
+      RemoteViews views = getUpdatedViews(this);
+      // push update
+      ComponentName thisWidget = new ComponentName(this,
+          DroidAwakeWidgetProvider.class);
+      AppWidgetManager manager = AppWidgetManager.getInstance(this);
+      manager.updateAppWidget(thisWidget, views);
+    }
+
+    private RemoteViews getUpdatedViews(Context context) {
+      boolean hasLock = isLocked();
+      Log.debug(
+          TAG,
+          "UpdateService.getUpdatedViews: wakeLock = " + wakeLock + " / hasLock = " + hasLock);
+      // create an intent to broadcast the toggle action
+      Intent intent = new Intent(context, DroidAwakeWidgetProvider.class);
+      intent.setAction(ACTION_TOGGLE);
+      PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
+          intent, 0);
+      // get the layout, set drawable and attach the on-click listener
+      RemoteViews views = new RemoteViews(context.getPackageName(),
+          R.layout.widget);
+      views.setImageViewResource(R.id.button, hasLock ? BUTTON_ON : BUTTON_OFF);
+      views.setOnClickPendingIntent(R.id.button, pendingIntent);
+      return views;
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+      return null; // not needed
+    }
+
+    private class ScreenOnOffRecevier extends BroadcastReceiver {
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        if (ACTION_SCREEN_OFF.equals(intent.getAction())) {
+          Log.debug(TAG, "onReceive ACTION_SCREEN_OFF");
+          unregisterReceiver(this);
+          unlock(context, false);
+          updateWidgets();
+          stopSelf();
         }
-
-		@Override
-		public IBinder onBind(Intent intent) {
-			return null; // not needed
-		}
-	}
+      }
+    }
+  }
 }
