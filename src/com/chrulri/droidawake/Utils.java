@@ -18,18 +18,41 @@
 
 package com.chrulri.droidawake;
 
-import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.widget.Toast;
 
-public class StubActivity extends Activity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        sendBroadcast(new Intent(Intent.ACTION_MAIN)
-                .addCategory(Intent.CATEGORY_HOME));
-        Toast.makeText(this, R.string.stub, Toast.LENGTH_LONG).show();
-        finish();
-        super.onCreate(savedInstanceState);
+public final class Utils {
+    private static final String TAG = Utils.class.getSimpleName();
+
+    private Utils() {
+    }
+
+    public static boolean isServiceRunning(Context context, Class<? extends Service> serviceClass) {
+        ActivityManager manager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager
+                .getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void updateWidgets(Context context) {
+        Log.debug(TAG, "updateWidgets");
+        context.startService(new Intent(context, UpdateService.class));
+    }
+
+    public static void startLockService(Context context) {
+        Log.debug(TAG, "startLockService");
+        context.startService(new Intent(context, LockService.class));
+    }
+
+    public static void stopLockService(Context context) {
+        Log.debug(TAG, "stopLockService");
+        context.stopService(new Intent(context, LockService.class));
     }
 }
