@@ -43,6 +43,13 @@ public class LockService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        onStart(intent, startId);
+        return START_STICKY;
+    }
+
+    // used for backwards compatibility
+    @Override
+    public void onStart(Intent intent, int startId) {
         Log.debug(TAG, "onStart");
 
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -57,7 +64,6 @@ public class LockService extends Service {
         showToast(R.string.wakelock_on);
 
         Utils.updateWidgets(this);
-        return START_STICKY;
     }
 
     @Override

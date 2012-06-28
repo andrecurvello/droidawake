@@ -33,6 +33,13 @@ public class UpdateService extends Service {
     private static final int BUTTON_OFF = R.drawable.bulb_off;
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        onStart(intent, startId);
+        return START_STICKY;
+    }
+
+    // used for backwards compatibility
+    @Override
     public void onStart(Intent intent, int startId) {
         Log.debug(TAG, "onStart");
 
