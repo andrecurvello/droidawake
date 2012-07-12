@@ -16,16 +16,16 @@
  *                                                                            *
  *  You should have received a copy of the GNU General Public License         *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.     *
- ******************************************************************************
+ ******************************************************************************
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.chrulri.droidawake"
-    android:versionCode="6"
-    android:versionName="1.5" >
+    android:versionCode="7"
+    android:versionName="1.6" >
 
     <uses-sdk
-        android:minSdkVersion="3"
-        android:targetSdkVersion="15" />
+        android:minSdkVersion="5"
+        android:targetSdkVersion="16" />
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
@@ -42,9 +42,7 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".DroidAwakeWidgetProvider"
-            android:exported="false" >
+        <receiver android:name=".DroidAwakeWidgetProvider" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
