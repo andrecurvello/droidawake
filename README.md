@@ -30,5 +30,5 @@ LICENSE
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************
 
-[1]: https://market.android.com/details?id=com.chrulri.droidawake
+[1]: https://play.google.com/store/apps/details?id=com.chrulri.droidawake
 [2]: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=chrulri@gmail.com&item_name=droidawake
