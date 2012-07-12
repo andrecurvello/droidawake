@@ -20,6 +20,8 @@ package com.chrulri.droidawake;
 
 import static android.content.Intent.ACTION_SCREEN_OFF;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -27,7 +29,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.widget.Toast;
 
 public class LockService extends Service {
     private static final String TAG = LockService.class.getSimpleName();
@@ -43,27 +44,38 @@ public class LockService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        onStart(intent, startId);
+        Log.debug(TAG, "onStart");
+
+        if (wakeLock != null && wakeLock.isHeld()) {
+            stopSelf();
+        } else {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            wakeLock = pm.newWakeLock(WAKELOCK_FLAGS, getPackageName());
+            wakeLock.acquire();
+
+            startForeground();
+
+            if (screenReceiver == null) {
+                screenReceiver = new ScreenOnOffRecevier();
+            }
+            registerReceiver(screenReceiver, new IntentFilter(ACTION_SCREEN_OFF));
+
+            Utils.updateWidgets(this);
+        }
+
         return START_STICKY;
     }
 
-    // used for backwards compatibility
-    @Override
-    public void onStart(Intent intent, int startId) {
-        Log.debug(TAG, "onStart");
-
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(WAKELOCK_FLAGS, getPackageName());
-        wakeLock.acquire();
-
-        if (screenReceiver == null) {
-            screenReceiver = new ScreenOnOffRecevier();
-        }
-        registerReceiver(screenReceiver, new IntentFilter(ACTION_SCREEN_OFF));
-
-        showToast(R.string.wakelock_on);
-
-        Utils.updateWidgets(this);
+    @SuppressWarnings("deprecation")
+    private void startForeground() {
+        PendingIntent emptyIntent = PendingIntent.getService(getApplicationContext(), 0,
+                new Intent(this, LockService.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification notification = new Notification(R.drawable.ic_launcher,
+                getText(R.string.wakelock_on), System.currentTimeMillis());
+        notification.setLatestEventInfo(this, getText(R.string.app_name),
+                getText(R.string.wakelock_on), emptyIntent);
+        notification.flags = Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+        startForeground(1, notification);
     }
 
     @Override
@@ -75,20 +87,16 @@ public class LockService extends Service {
     public void onDestroy() {
         Log.debug(TAG, "onDestroy");
 
+        stopForeground(true);
+
         unregisterReceiver(screenReceiver);
 
         if (wakeLock != null && wakeLock.isHeld()) {
             wakeLock.release();
-
-            showToast(R.string.wakelock_off);
         }
         wakeLock = null;
 
         Utils.updateWidgets(this);
-    }
-
-    private void showToast(int resId) {
-        Toast.makeText(this, resId, Toast.LENGTH_SHORT).show();
     }
 
     private class ScreenOnOffRecevier extends BroadcastReceiver {
