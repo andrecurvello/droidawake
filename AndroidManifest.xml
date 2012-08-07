@@ -16,15 +16,15 @@
  *                                                                            *
  *  You should have received a copy of the GNU General Public License         *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.     *
- ******************************************************************************
+ ******************************************************************************
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.chrulri.droidawake"
-    android:versionCode="7"
-    android:versionName="1.6" >
+    android:versionCode="8"
+    android:versionName="1.7" >
 
     <uses-sdk
-        android:minSdkVersion="5"
+        android:minSdkVersion="3"
         android:targetSdkVersion="16" />
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />

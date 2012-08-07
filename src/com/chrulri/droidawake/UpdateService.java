@@ -19,28 +19,20 @@
 package com.chrulri.droidawake;
 
 import android.app.PendingIntent;
-import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.IBinder;
 import android.widget.RemoteViews;
 
-public class UpdateService extends Service {
+public class UpdateService extends CompatService {
     private static final String TAG = UpdateService.class.getSimpleName();
 
     private static final int BUTTON_ON = R.drawable.bulb_on;
     private static final int BUTTON_OFF = R.drawable.bulb_off;
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        onStart(intent, startId);
-        return START_STICKY;
-    }
-
-    // used for backwards compatibility
-    @Override
-    public void onStart(Intent intent, int startId) {
+    public void onCompatStart(Intent intent, int startId) {
         Log.debug(TAG, "onStart");
 
         updateWidgets();
