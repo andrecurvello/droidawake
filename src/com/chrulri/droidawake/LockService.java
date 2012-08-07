@@ -22,7 +22,6 @@ import static android.content.Intent.ACTION_SCREEN_OFF;
 
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -30,8 +29,9 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.os.PowerManager;
 
-public class LockService extends Service {
+public class LockService extends CompatService {
     private static final String TAG = LockService.class.getSimpleName();
+    private static final int NOTIFICATION_ID = 1;
 
     private static final int WAKELOCK_FLAGS = PowerManager.SCREEN_DIM_WAKE_LOCK;
 
@@ -43,7 +43,7 @@ public class LockService extends Service {
     private PowerManager.WakeLock wakeLock;
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public void onCompatStart(Intent intent, int startId) {
         Log.debug(TAG, "onStart");
 
         if (wakeLock != null && wakeLock.isHeld()) {
@@ -62,8 +62,6 @@ public class LockService extends Service {
 
             Utils.updateWidgets(this);
         }
-
-        return START_STICKY;
     }
 
     @SuppressWarnings("deprecation")
@@ -75,7 +73,7 @@ public class LockService extends Service {
         notification.setLatestEventInfo(this, getText(R.string.app_name),
                 getText(R.string.wakelock_on), emptyIntent);
         notification.flags = Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
-        startForeground(1, notification);
+        startCompatForeground(NOTIFICATION_ID, notification);
     }
 
     @Override
@@ -87,7 +85,7 @@ public class LockService extends Service {
     public void onDestroy() {
         Log.debug(TAG, "onDestroy");
 
-        stopForeground(true);
+        stopCompatForeground(NOTIFICATION_ID);
 
         unregisterReceiver(screenReceiver);
 
